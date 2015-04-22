@@ -1,27 +1,13 @@
 global = window
 gl = undefined
+vertShaderLoaded = false
+fragShaderLoaded = false
+shaders = {vertShader: undefined, fragShader: undefined}
 shaderProgram = undefined
 mvMatrix = mat4.create()
 pMatrix = mat4.create()
 triangleVertexPositionBuffer = undefined
 squareVertexPositionBuffer = undefined
-
-loadFile = (url, store, cb) ->
-  cbErr = (url) ->
-    alert("failed to load #{url}")
-
-  req = new XMLHttpRequest()
-  req.open('GET', url, true)
-
-  req.onreadystatechange = () ->
-    if req.readyState is 4
-      if req.status is 200
-        cb(store, req.responseText)
-      else
-        cbErr(url)
-
-  req.send(null)
-
 
 initGL = (canvas) ->
   try
@@ -31,34 +17,39 @@ initGL = (canvas) ->
   catch e
   if !gl
     alert 'Could not initialise WebGL, sorry :-('
+  gl
 
-getShader = (gl, id) ->
-  shaderScript = document.getElementById(id)
-  if !shaderScript
-    return null
-  str = ''
-  k = shaderScript.firstChild
-  while k
-    if k.nodeType == 3
-      str += k.textContent
-    k = k.nextSibling
-  shader = undefined
-  if shaderScript.type == 'x-shader/x-fragment'
-    shader = gl.createShader(gl.FRAGMENT_SHADER)
-  else if shaderScript.type == 'x-shader/x-vertex'
-    shader = gl.createShader(gl.VERTEX_SHADER)
-  else
-    return null
-  gl.shaderSource shader, str
-  gl.compileShader shader
-  if !gl.getShaderParameter(shader, gl.COMPILE_STATUS)
-    alert gl.getShaderInfoLog(shader)
-    return null
-  shader
+loadShaders = ->
+  vertShaderScript = undefined
+  fragShaderScript = undefined
+
+  vReq = new XMLHttpRequest()
+  vReq.open('GET', 'vertex.glsl', true)
+  vReq.onreadystatechange = () ->
+    if (vReq.readyState is 4) and (vReq.status is 200)
+      vertShaderScript = vReq.responseText
+      console.log("vertex.glsl loaded:\n#{vertShaderScript}")
+      shaders.vertShader = gl.createShader(gl.VERTEX_SHADER)
+      gl.shaderSource(shaders.vertShader, vertShaderScript)
+      gl.compileShader(shaders.vertShader)
+      vertShaderLoaded = true
+  vReq.send(null)
+
+  fReq = new XMLHttpRequest()
+  fReq.open('GET', 'fragment.glsl', true)
+  fReq.onreadystatechange = () ->
+    if (fReq.readyState is 4) and (fReq.status is 200)
+      fragShaderScript = fReq.responseText
+      console.log("fragment.glsl loaded:\n#{fragShaderScript}")
+      shaders.fragShader = gl.createShader(gl.FRAGMENT_SHADER)
+      gl.shaderSource(shaders.fragShader, fragShaderScript)
+      gl.compileShader(shaders.fragShader)
+      fragShaderLoaded = true
+  fReq.send(null)
 
 initShaders = ->
-  fragmentShader = getShader(gl, 'shader-fs')
-  vertexShader = getShader(gl, 'shader-vs')
+  fragmentShader = shaders.fragShader
+  vertexShader = shaders.vertShader
   shaderProgram = gl.createProgram()
   gl.attachShader shaderProgram, vertexShader
   gl.attachShader shaderProgram, fragmentShader
@@ -80,36 +71,27 @@ setMatrixUniforms = ->
 initBuffers = ->
   triangleVertexPositionBuffer = gl.createBuffer()
   gl.bindBuffer gl.ARRAY_BUFFER, triangleVertexPositionBuffer
-  vertices = [
-    0.0
-    1.0
-    0.0
-    -1.0
-    -1.0
-    0.0
-    1.0
-    -1.0
-    0.0
+  vertices = [0.0, 1.0, 0.0
+              -1.0, -1.0, 0.0
+              1.0, -1.0, 0.0
   ]
   gl.bufferData gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW
   triangleVertexPositionBuffer.itemSize = 3
   triangleVertexPositionBuffer.numItems = 3
   squareVertexPositionBuffer = gl.createBuffer()
   gl.bindBuffer gl.ARRAY_BUFFER, squareVertexPositionBuffer
-  vertices = [
-    1.0
-    1.0
-    0.0
-    -1.0
-    1.0
-    0.0
-    1.0
-    -1.0
-    0.0
-    -1.0
-    -1.0
-    0.0
-  ]
+  vertices = [1.0
+              1.0
+              0.0
+              -1.0
+              1.0
+              0.0
+              1.0
+              -1.0
+              0.0
+              -1.0
+              -1.0
+              0.0]
   gl.bufferData gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW
   squareVertexPositionBuffer.itemSize = 3
   squareVertexPositionBuffer.numItems = 4
@@ -120,42 +102,34 @@ drawScene = ->
   gl.clear gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT
   mat4.perspective 45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix
   mat4.identity mvMatrix
-  mat4.translate mvMatrix, [
-    -1.5
-    0.0
-    -7.0
-  ]
+  mat4.translate mvMatrix, [-1.5
+                            0.0
+                            -7.0]
   gl.bindBuffer gl.ARRAY_BUFFER, triangleVertexPositionBuffer
   gl.vertexAttribPointer shaderProgram.vertexPositionAttribute, triangleVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0
   setMatrixUniforms()
   gl.drawArrays gl.TRIANGLES, 0, triangleVertexPositionBuffer.numItems
-  mat4.translate mvMatrix, [
-    3.0
-    0.0
-    0.0
-  ]
+  mat4.translate mvMatrix, [3.0
+                            0.0
+                            0.0]
   gl.bindBuffer gl.ARRAY_BUFFER, squareVertexPositionBuffer
   gl.vertexAttribPointer shaderProgram.vertexPositionAttribute, squareVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0
   setMatrixUniforms()
   gl.drawArrays gl.TRIANGLE_STRIP, 0, squareVertexPositionBuffer.numItems
 
+waitForShaders = ->
+  console.log(shaders)
+  if not (vertShaderLoaded and fragShaderLoaded)
+    setTimeout((() -> waitForShaders()), 20)
+  else
+    initShaders()
+    initBuffers()
+    gl.clearColor(0.0, 0.0, 0.0, 1.0)
+    gl.enable(gl.DEPTH_TEST)
+    drawScene()
 
 global.webGLStart = ->
   canvas = document.getElementById('lesson01-canvas')
   initGL canvas
-  initShaders()
-  initBuffers()
-  gl.clearColor 0.0, 0.0, 0.0, 1.0
-  gl.enable gl.DEPTH_TEST
-  drawScene()
-
-  cb = (sh, txt) ->
-    sh = txt
-    console.log(txt)
-  text = null
-  loadFile('vertex.glsl', text, cb)
-  console.log(text)
-
-
-# ---
-# generated by js2coffee 2.0.3
+  loadShaders()
+  waitForShaders()
