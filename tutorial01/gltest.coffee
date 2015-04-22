@@ -9,6 +9,7 @@ pMatrix = mat4.create()
 triangleVertexPositionBuffer = undefined
 squareVertexPositionBuffer = undefined
 
+
 initGL = (canvas) ->
   try
     gl = canvas.getContext('experimental-webgl')
@@ -18,6 +19,7 @@ initGL = (canvas) ->
   if !gl
     alert 'Could not initialise WebGL, sorry :-('
   gl
+
 
 loadShaders = ->
   vertShaderScript = undefined
@@ -47,6 +49,7 @@ loadShaders = ->
       fragShaderLoaded = true
   fReq.send(null)
 
+
 initShaders = ->
   fragmentShader = shaders.fragShader
   vertexShader = shaders.vertShader
@@ -71,10 +74,9 @@ setMatrixUniforms = ->
 initBuffers = ->
   triangleVertexPositionBuffer = gl.createBuffer()
   gl.bindBuffer gl.ARRAY_BUFFER, triangleVertexPositionBuffer
-  vertices = [0.0, 1.0, 0.0
-              -1.0, -1.0, 0.0
-              1.0, -1.0, 0.0
-  ]
+  vertices = [+0.0, +1.0, +0.0
+              -1.0, -1.0, +0.0
+              +1.0, -1.0, +0.0]
   gl.bufferData gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW
   triangleVertexPositionBuffer.itemSize = 3
   triangleVertexPositionBuffer.numItems = 3
@@ -117,6 +119,7 @@ drawScene = ->
   setMatrixUniforms()
   gl.drawArrays gl.TRIANGLE_STRIP, 0, squareVertexPositionBuffer.numItems
 
+
 waitForShaders = ->
   console.log(shaders)
   if not (vertShaderLoaded and fragShaderLoaded)
@@ -127,6 +130,7 @@ waitForShaders = ->
     gl.clearColor(0.0, 0.0, 0.0, 1.0)
     gl.enable(gl.DEPTH_TEST)
     drawScene()
+
 
 global.webGLStart = ->
   canvas = document.getElementById('lesson01-canvas')
