@@ -1,9 +1,27 @@
+global = window
 gl = undefined
 shaderProgram = undefined
 mvMatrix = mat4.create()
 pMatrix = mat4.create()
 triangleVertexPositionBuffer = undefined
 squareVertexPositionBuffer = undefined
+
+loadFile = (url, store, cb) ->
+  cbErr = (url) ->
+    alert("failed to load #{url}")
+
+  req = new XMLHttpRequest()
+  req.open('GET', url, true)
+
+  req.onreadystatechange = () ->
+    if req.readyState is 4
+      if req.status is 200
+        cb(store, req.responseText)
+      else
+        cbErr(url)
+
+  req.send(null)
+
 
 initGL = (canvas) ->
   try
@@ -122,7 +140,7 @@ drawScene = ->
   gl.drawArrays gl.TRIANGLE_STRIP, 0, squareVertexPositionBuffer.numItems
 
 
-window.webGLStart = ->
+global.webGLStart = ->
   canvas = document.getElementById('lesson01-canvas')
   initGL canvas
   initShaders()
@@ -130,6 +148,13 @@ window.webGLStart = ->
   gl.clearColor 0.0, 0.0, 0.0, 1.0
   gl.enable gl.DEPTH_TEST
   drawScene()
+
+  cb = (sh, txt) ->
+    sh = txt
+    console.log(txt)
+  text = null
+  loadFile('vertex.glsl', text, cb)
+  console.log(text)
 
 
 # ---
