@@ -73,9 +73,12 @@ initBuffers = ->
 # triangle vertex positions
   triangleVertexPositionBuffer = gl.createBuffer()
   gl.bindBuffer gl.ARRAY_BUFFER, triangleVertexPositionBuffer
-  vertices = [0, 1, 0
-              -1, -1, 0
-              1, -1, 0]
+  vertices =
+    [
+      0, 1, 0
+      -1, -1, 0
+      1, -1, 0
+    ]
   gl.bufferData gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW
   triangleVertexPositionBuffer.itemSize = 3
   triangleVertexPositionBuffer.numItems = 3
@@ -83,36 +86,39 @@ initBuffers = ->
   # triangle vertex colors
   triangleVertexColorBuffer = gl.createBuffer()
   gl.bindBuffer gl.ARRAY_BUFFER, triangleVertexColorBuffer
-  colors = [1, 0, 0, 1  # red
-            0, 1, 0, 1  # green
-            0, 0, 1, 1  # blue]
-            gl.bufferData gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW
-            triangleVertexColorBuffer.itemSize = 4
-            triangleVertexColorBuffer.numItems = 3
+  colors =
+    [
+      1, 0, 0, 1  # red #
+      0, 1, 0, 1  # green #
+      0, 0, 1, 1  # blue #
+    ]
+  gl.bufferData gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW
+  triangleVertexColorBuffer.itemSize = 4
+  triangleVertexColorBuffer.numItems = 3
 
 # TODO: do square stuff here!
 
-    drawScene = ->
+drawScene = ->
 # get scene ready
-      gl.viewport 0, 0, gl.viewportWidth, gl.viewportHeight
-      gl.clear (gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-      mat4.perspective 45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix
-      mat4.identity mvMatrix
+  gl.viewport 0, 0, gl.viewportWidth, gl.viewportHeight
+  gl.clear (gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+  mat4.perspective 45, gl.viewportWidth / gl.viewportHeight, 0.1, 100.0, pMatrix
+  mat4.identity mvMatrix
 
-      # setup positions
-      mat4.translate mvMatrix, [-1.5, 0.0, -7.0]
-      gl.bindBuffer gl.ARRAY_BUFFER, triangleVertexPositionBuffer
-      gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute, triangleVertexPositionBuffer.itemSize, gl.FLOAT,
-          false, 0, 0)
+  # setup positions
+  mat4.translate mvMatrix, [-1.5, 0.0, -7.0]
+  gl.bindBuffer gl.ARRAY_BUFFER, triangleVertexPositionBuffer
+  gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
+      triangleVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0)
 
-      # setup colors
-      gl.bindBuffer gl.ARRAY_BUFFER, triangleVertexColorBuffer
-      gl.vertexAttribPointer(shaderProgram.vertexColorAttribute, triangleVertexColorBuffer.itemSize, gl.FLOAT, false, 0,
-          0)
+  # setup colors
+  gl.bindBuffer gl.ARRAY_BUFFER, triangleVertexColorBuffer
+  gl.vertexAttribPointer(shaderProgram.vertexColorAttribute,
+      triangleVertexColorBuffer.itemSize, gl.FLOAT, false, 0, 0)
 
-      # draw triangles
-      setMatrixUniforms()
-      gl.drawArrays gl.TRIANGLES, 0, triangleVertexPositionBuffer.numItems
+  # draw triangles
+  setMatrixUniforms()
+  gl.drawArrays gl.TRIANGLES, 0, triangleVertexPositionBuffer.numItems
 
 # TODO: draw squares!
 
@@ -137,5 +143,4 @@ window.testing = ->
     gl.enable gl.DEPTH_TEST
     drawScene()
 
-  waitForShaders(finishGLInit)
-
+  waitForShaders finishGLInit
