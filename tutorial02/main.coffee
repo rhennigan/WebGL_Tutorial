@@ -75,9 +75,9 @@ initBuffers = ->
   gl.bindBuffer gl.ARRAY_BUFFER, triangleVertexPositionBuffer
   vertices =
     [
-      0, 1, 0
-      -1, -1, 0
-      1, -1, 0
+      0, 1, 1
+      -1, -1, 2
+      1, -1, 3
     ]
   gl.bufferData gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW
   triangleVertexPositionBuffer.itemSize = 3
@@ -88,9 +88,9 @@ initBuffers = ->
   gl.bindBuffer gl.ARRAY_BUFFER, triangleVertexColorBuffer
   colors =
     [
-      1, 0, 0, 1  # red #
-      0, 1, 0, 1  # green #
-      0, 0, 1, 1  # blue #
+      1, 0, 0, 1  # red
+      0, 1, 0, 1  # green
+      0, 0, 1, 1  # blue
     ]
   gl.bufferData gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW
   triangleVertexColorBuffer.itemSize = 4
