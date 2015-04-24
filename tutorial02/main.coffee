@@ -106,7 +106,7 @@ drawScene = ->
   mat4.identity mvMatrix
 
   # setup positions
-  mat4.translate mvMatrix, [-1.5, 0.0, -7.0]
+  mat4.translate mvMatrix, [0, 0, -5]
   gl.bindBuffer gl.ARRAY_BUFFER, triangleVertexPositionBuffer
   gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
       triangleVertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0)
