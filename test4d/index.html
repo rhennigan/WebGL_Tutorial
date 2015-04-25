@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>tutorial 2</title>
+    <script type="text/javascript" src="../lib/gl-matrix.js"></script>
+    <script type="text/javascript" src="../lib/webgl-utils.js"></script>
+    <script type="text/javascript" src="main.js"></script>
+</head>
+<body onload="testing();">
+<canvas id="canvas" width="1280" height="720"></canvas>
+<table>
+    <tr>
+        <th>x</th>
+        <th>y</th>
+    </tr>
+    <tr>
+        <td><input type="button" value="r1" onclick="rotateMode.x = 1;"></td>
+        <td><input type="button" value="r1" onclick="rotateMode.y = 1;"></td>
+    </tr>
+    <tr>
+        <td><input type="button" value="r2" onclick="rotateMode.x = 2;"></td>
+        <td><input type="button" value="r2" onclick="rotateMode.y = 2;"></td>
+    </tr>
+    <tr>
+        <td><input type="button" value="r3" onclick="rotateMode.x = 3;"></td>
+        <td><input type="button" value="r3" onclick="rotateMode.y = 3;"></td>
+    </tr>
+    <tr>
+        <td><input type="button" value="r4" onclick="rotateMode.x = 4;"></td>
+        <td><input type="button" value="r4" onclick="rotateMode.y = 4;"></td>
+    </tr>
+    <tr>
+        <td><input type="button" value="r5" onclick="rotateMode.x = 5;"></td>
+        <td><input type="button" value="r5" onclick="rotateMode.y = 5;"></td>
+    </tr>
+    <tr>
+        <td><input type="button" value="r6" onclick="rotateMode.x = 6;"></td>
+        <td><input type="button" value="r6" onclick="rotateMode.y = 6;"></td>
+    </tr>
+</table>
+<input type="button" value="auto on" onclick="auto = true;">
+<input type="button" value="auto off" onclick="auto = false;">
+</body>
+</html>
