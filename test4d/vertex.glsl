@@ -108,7 +108,7 @@ void main(void) {
   
   vec4 rotated = rotation(uR1Float, uR2Float, uR3Float, uR4Float, uR5Float, uR6Float, translated);
   vec4 relativeToCamera = rotated - uPVector;
-  vec4 p = perspective_proj(vec4(0.0, 0.0, 0.0, 0.1), relativeToCamera);
+  vec4 p = perspective_proj(vec4(0.0, 0.0, 0.0, -0.1), relativeToCamera);
   vec4 homogenous3 = vec4(p[0], p[1], p[2], 1.0);
 
   gl_Position = uPMatrix * uMVMatrix * homogenous3;

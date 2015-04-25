@@ -853,7 +853,7 @@ pw = 0
 rotationSpeed = 2.0 * Math.PI
 window.rotateMode =
   x: 1
-  y: 3
+  y: 4
 
 stepRotationMode = (dir) ->
   center = {x: 0.0, y: 0.0}
