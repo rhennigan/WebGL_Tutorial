@@ -25,6 +25,10 @@ vertexPositionBuffer = undefined
 vertexColorBuffer = undefined
 vertexNormalBuffer = undefined
 vertexIndexBuffer = undefined
+vertexLinePositionBuffer = undefined
+vertexLineIndexBuffer = undefined
+
+meshBool = true
 
 initGL = (canvas) ->
   try
@@ -87,6 +91,7 @@ initShaders = ->
       shaderProgram.r4FloatUniform = gl.getUniformLocation shaderProgram, "uR4Float"
       shaderProgram.r5FloatUniform = gl.getUniformLocation shaderProgram, "uR5Float"
       shaderProgram.r6FloatUniform = gl.getUniformLocation shaderProgram, "uR6Float"
+      shaderProgram.meshBoolUniform = gl.getUniformLocation shaderProgram, "uMeshBool"
 
 setMatrixUniforms = ->
   gl.uniformMatrix4fv shaderProgram.pMatrixUniform, false, pMatrix
@@ -100,6 +105,7 @@ setMatrixUniforms = ->
   gl.uniform1f shaderProgram.r4FloatUniform, r4Float
   gl.uniform1f shaderProgram.r5FloatUniform, r5Float
   gl.uniform1f shaderProgram.r6FloatUniform, r6Float
+  gl.uniform1i shaderProgram.meshBoolUniform, meshBool
 
 initBuffers = ->
 # vertex positions
@@ -502,7 +508,6 @@ initBuffers = ->
       0.00605, 0.245, 0.78125, 0.5,
       0.00605, 0.245, 0.78125, 0.5
     ]
-
   gl.bufferData gl.ARRAY_BUFFER, new Float32Array(unpackedColors), gl.STATIC_DRAW
   vertexColorBuffer.itemSize = 4
   vertexColorBuffer.numItems = 192
@@ -714,32 +719,67 @@ initBuffers = ->
   gl.bindBuffer gl.ELEMENT_ARRAY_BUFFER, vertexIndexBuffer
   vertexIndices =
     [
-      0, 1, 2, 0, 2, 3, 4, 5, 6, 4, 6, 7, 8, 9, 10, 8, 10, 11, 12, 13, 14, 12, 14, 15, 16, 17, 18, 16, 18, 19, 20, 21,
-      22, 20, 22, 23, 24, 25, 26, 24, 26, 27, 28, 29, 30, 28, 30, 31, 32, 33, 34, 32, 34, 35, 36, 37, 38, 36, 38, 39,
-      40, 41, 42, 40, 42, 43, 44, 45, 46, 44, 46, 47, 48, 49, 50, 48, 50, 51, 52, 53, 54, 52, 54, 55, 56, 57, 58, 56,
-      58, 59, 60, 61, 62, 60, 62, 63, 64, 65, 66, 64, 66, 67, 68, 69, 70, 68, 70, 71, 72, 73, 74, 72, 74, 75, 76, 77,
-      78, 76, 78, 79, 80, 81, 82, 80, 82, 83, 84, 85, 86, 84, 86, 87, 88, 89, 90, 88, 90, 91, 92, 93, 94, 92, 94, 95,
-      96, 97, 98, 96, 98, 99, 100, 101, 102, 100, 102, 103, 104, 105, 106, 104, 106, 107, 108, 109, 110, 108, 110, 111,
-      112, 113, 114, 112, 114, 115, 116, 117, 118, 116, 118, 119, 120, 121, 122, 120, 122, 123, 124, 125, 126, 124, 126,
-      127, 128, 129, 130, 128, 130, 131, 132, 133, 134, 132, 134, 135, 136, 137, 138, 136, 138, 139, 140, 141, 142, 140,
-      142, 143, 144, 145, 146, 144, 146, 147, 148, 149, 150, 148, 150, 151, 152, 153, 154, 152, 154, 155, 156, 157, 158,
-      156, 158, 159, 160, 161, 162, 160, 162, 163, 164, 165, 166, 164, 166, 167, 168, 169, 170, 168, 170, 171, 172, 173,
-      174, 172, 174, 175, 176, 177, 178, 176, 178, 179, 180, 181, 182, 180, 182, 183, 184, 185, 186, 184, 186, 187, 188,
-      189, 190, 188, 190, 191
+      0, 1, 2, 0, 3, 2, 4, 5, 6, 4, 7, 6, 8, 9, 10, 8, 11, 10, 12, 13, 14, 12, 15, 14, 16, 17, 18, 16, 19, 18, 20, 21,
+      22, 20, 23, 22, 24, 25, 26, 24, 27, 26, 28, 29, 30, 28, 31, 30, 32, 33, 34, 32, 35, 34, 36, 37, 38, 36, 39, 38,
+      40, 41, 42, 40, 43, 42, 44, 45, 46, 44, 47, 46, 48, 49, 50, 48, 51, 50, 52, 53, 54, 52, 55, 54, 56, 57, 58, 56,
+      59, 58, 60, 61, 62, 60, 63, 62, 64, 65, 66, 64, 67, 66, 68, 69, 70, 68, 71, 70, 72, 73, 74, 72, 75, 74, 76, 77,
+      78, 76, 79, 78, 80, 81, 82, 80, 83, 82, 84, 85, 86, 84, 87, 86, 88, 89, 90, 88, 91, 90, 92, 93, 94, 92, 95, 94,
+      96, 97, 98, 96, 99, 98, 100, 101, 102, 100, 103, 102, 104, 105, 106, 104, 107, 106, 108, 109, 110, 108, 111, 110,
+      112, 113, 114, 112, 115, 114, 116, 117, 118, 116, 119, 118, 120, 121, 122, 120, 123, 122, 124, 125, 126, 124, 127,
+      126, 128, 129, 130, 128, 131, 130, 132, 133, 134, 132, 135, 134, 136, 137, 138, 136, 139, 138, 140, 141, 142, 140,
+      143, 142, 144, 145, 146, 144, 147, 146, 148, 149, 150, 148, 151, 150, 152, 153, 154, 152, 155, 154, 156, 157, 158,
+      156, 159, 158, 160, 161, 162, 160, 163, 162, 164, 165, 166, 164, 167, 166, 168, 169, 170, 168, 171, 170, 172, 173,
+      174, 172, 175, 174, 176, 177, 178, 176, 179, 178, 180, 181, 182, 180, 183, 182, 184, 185, 186, 184, 187, 186, 188,
+      189, 190, 188, 191, 190
     ]
   gl.bufferData gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexIndices), gl.STATIC_DRAW
   vertexIndexBuffer.itemSize = 1
   vertexIndexBuffer.numItems = 288
 
+  # line vertices
+  vertexLinePositionBuffer = gl.createBuffer()
+  gl.bindBuffer gl.ARRAY_BUFFER, vertexLinePositionBuffer
+  lineVertices =
+    [
+      -1, -1, -1, -1,
+      -1, -1, -1, 1,
+      -1, -1, 1, -1,
+      -1, -1, 1, 1,
+      -1, 1, -1, -1,
+      -1, 1, -1, 1,
+      -1, 1, 1, -1,
+      -1, 1, 1, 1,
+      1, -1, -1, -1,
+      1, -1, -1, 1,
+      1, -1, 1, -1,
+      1, -1, 1, 1,
+      1, 1, -1, -1,
+      1, 1, -1, 1,
+      1, 1, 1, -1,
+      1, 1, 1, 1
+    ]
+  gl.bufferData gl.ARRAY_BUFFER, new Float32Array(lineVertices), gl.STATIC_DRAW
+  vertexLinePositionBuffer.itemSize = 4
+  vertexLinePositionBuffer.numItems = 16
+
+  # indices for lines
+  vertexLineIndexBuffer = gl.createBuffer()
+  gl.bindBuffer gl.ELEMENT_ARRAY_BUFFER, vertexLineIndexBuffer
+  vertexLineIndices =
+    [
+      0, 1, 0, 2, 0, 4, 0, 8, 1, 0, 1, 3, 1, 5, 1, 9, 2, 0, 2, 3, 2, 6, 2, 10, 3, 1, 3, 2, 3, 7, 3, 11, 4, 0, 4, 5, 4,
+      6, 4, 12, 5, 1, 5, 4, 5, 7, 5, 13, 6, 2, 6, 4, 6, 7, 6, 14, 7, 3, 7, 5, 7, 6, 7, 15, 8, 0, 8, 9, 8, 10, 8, 12, 9,
+      1, 9, 8, 9, 11, 9, 13, 10, 2, 10, 8, 10, 11, 10, 14, 11, 3, 11, 9, 11, 10, 11, 15, 12, 4, 12, 8, 12, 13, 12, 14,
+      13, 5, 13, 9, 13, 12, 13, 15, 14, 6, 14, 10, 14, 12, 14, 15, 15, 7, 15, 11, 15, 13, 15, 14
+    ]
+  gl.bufferData gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(vertexLineIndices), gl.STATIC_DRAW
+  vertexLineIndexBuffer.itemSize = 1
+  vertexLineIndexBuffer.numItems = 128
+
 # TODO: do square stuff here!
 
 drawTesseract = (x, y, z, w) ->
   vec4.set tVector, x, y, z, w
-
-  # setup positions
-  gl.bindBuffer gl.ARRAY_BUFFER, vertexPositionBuffer
-  gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
-      vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0)
 
   # setup colors
   gl.bindBuffer gl.ARRAY_BUFFER, vertexColorBuffer
@@ -751,9 +791,26 @@ drawTesseract = (x, y, z, w) ->
   gl.vertexAttribPointer(shaderProgram.vertexNormalAttribute,
       vertexNormalBuffer.itemSize, gl.FLOAT, false, 0, 0)
 
+  # setup line positions
+  gl.bindBuffer gl.ARRAY_BUFFER, vertexLinePositionBuffer
+  gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
+      vertexLinePositionBuffer.itemSize, gl.FLOAT, false, 0, 0)
+
+  # setup line index
+  gl.bindBuffer gl.ELEMENT_ARRAY_BUFFER, vertexLineIndexBuffer
+  setMatrixUniforms()
+  gl.uniform1i shaderProgram.meshBoolUniform, true
+  gl.drawElements gl.LINES, vertexLineIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0
+
+  # setup positions
+  gl.bindBuffer gl.ARRAY_BUFFER, vertexPositionBuffer
+  gl.vertexAttribPointer(shaderProgram.vertexPositionAttribute,
+      vertexPositionBuffer.itemSize, gl.FLOAT, false, 0, 0)
+
   # setup triangle index
   gl.bindBuffer gl.ELEMENT_ARRAY_BUFFER, vertexIndexBuffer
   setMatrixUniforms()
+  gl.uniform1i shaderProgram.meshBoolUniform, false
   gl.drawElements gl.TRIANGLES, vertexIndexBuffer.numItems, gl.UNSIGNED_SHORT, 0
 
 drawScene = (px, py, pz, pw) ->
@@ -769,7 +826,7 @@ drawScene = (px, py, pz, pw) ->
   vec4.set lightDirectionVector, 1, 1, 1, 1
   vec4.normalize(lightDirectionVector, lightDirectionVector)
 
-  d = 4
+  d = 3
   for x in [-1..1]
     for y in [-1..1]
       for z in [-1..1]
@@ -784,6 +841,8 @@ dragCurrent = {x: 0, y: 0}
 currentDirection =
   forward: 0
   right: 0
+  up: 0
+  charm: 0
 
 moveSpeed = 0.005
 px = 0
@@ -791,7 +850,7 @@ py = 0
 pz = 15
 pw = 0
 
-rotationSpeed = Math.PI
+rotationSpeed = 2.0 * Math.PI
 window.rotateMode =
   x: 1
   y: 3
@@ -821,22 +880,25 @@ modalRotate = (x0, y0) ->
     when 4 then r5Float = y
     when 5 then r6Float = y
 
-window.auto = false
+window.auto = true
 
 lastTime = 0
 animate = ->
   timeNow = (new Date).getTime()
   if lastTime != 0
     elapsed = timeNow - lastTime
-    pz += currentDirection.forward * moveSpeed * elapsed
-    px -= currentDirection.right * moveSpeed * elapsed
+    pz -= currentDirection.forward * moveSpeed * elapsed
+    px += currentDirection.right * moveSpeed * elapsed
+    py += currentDirection.up * moveSpeed * elapsed
+    pw += currentDirection.charm * moveSpeed * elapsed
+    pw = Math.max(0, pw)
     if auto
-      r1Float += 1.0 * elapsed * rotationSpeed / 50000
-      r2Float += 2.0 * elapsed * rotationSpeed / 50000
-      r3Float += 3.0 * elapsed * rotationSpeed / 50000
-      r4Float += 4.0 * elapsed * rotationSpeed / 50000
-      r5Float += 5.0 * elapsed * rotationSpeed / 50000
-      r6Float += 6.0 * elapsed * rotationSpeed / 50000
+      r1Float += 1.1 * elapsed * rotationSpeed / 50000
+      r2Float += 1.2 * elapsed * rotationSpeed / 50000
+      r3Float += 1.3 * elapsed * rotationSpeed / 50000
+      r4Float += 1.4 * elapsed * rotationSpeed / 50000
+      r5Float += 1.5 * elapsed * rotationSpeed / 50000
+      r6Float += 1.6 * elapsed * rotationSpeed / 50000
   lastTime = timeNow
 
 tick = ->
@@ -880,9 +942,12 @@ window.testing = ->
       when 65 then currentDirection.right = -1
       when 68 then currentDirection.right = 1
       when 83 then currentDirection.forward = -1
-
-      when 81 then stepRotationMode(0)
-      when 69 then stepRotationMode(1)
+      when 69 then currentDirection.up = 1
+      when 81 then currentDirection.up = -1
+      when 82 then currentDirection.charm = 1
+      when 70 then currentDirection.charm = -1
+  #      when 81 then stepRotationMode(0)
+  #      when 69 then stepRotationMode(1)
 
   handleKeyRelease = (event) ->
     code = event.keyCode
@@ -891,6 +956,11 @@ window.testing = ->
       when 65 then currentDirection.right = 0
       when 68 then currentDirection.right = 0
       when 83 then currentDirection.forward = 0
+      when 69 then currentDirection.up = 0
+      when 81 then currentDirection.up = 0
+      when 82 then currentDirection.charm = 0
+      when 70 then currentDirection.charm = 0
+
     console.log("position: (#{px}, #{py}, #{pz}, #{pw})")
 
   window.addEventListener "keydown", handleKeyPress, false

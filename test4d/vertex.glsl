@@ -15,6 +15,8 @@ uniform float uR4Float;
 uniform float uR5Float;
 uniform float uR6Float;
 
+uniform bool uMeshBool;
+
 varying vec4 vColor;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -106,12 +108,18 @@ void main(void) {
   
   vec4 rotated = rotation(uR1Float, uR2Float, uR3Float, uR4Float, uR5Float, uR6Float, translated);
   vec4 relativeToCamera = rotated - uPVector;
-  vec4 p = perspective_proj(vec4(0.0, 0.0, 0.0025, 0.075), relativeToCamera);
+  vec4 p = perspective_proj(vec4(0.0, 0.0, 0.0, 0.1), relativeToCamera);
   vec4 homogenous3 = vec4(p[0], p[1], p[2], 1.0);
 
   gl_Position = uPMatrix * uMVMatrix * homogenous3;
-  vColor = 0.25*aVertexColor + 0.75*intensity*aVertexColor;
-  vColor[3] = 0.75;
+
+  if (uMeshBool) {
+    vColor = vec4(1.0, 1.0, 1.0, 0.9);
+  } else {
+    vColor = 0.1*aVertexColor + 0.9*intensity*aVertexColor;
+    vColor[3] = 0.75;
+  }
+  
   // float r = aVertexColor[0];
   // float g = aVertexColor[1];
   // float b = aVertexColor[2];
